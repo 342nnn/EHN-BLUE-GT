@@ -1,0 +1,55 @@
+itemid = 5666 --block
+breakkkk = false
+
+function sendPunch(x, y)
+pkt = {}
+pkt.type = 3
+pkt.int_data = 18
+pkt.int_x = x
+pkt.int_y = y
+pkt.pos_x = getLocal().pos.x
+pkt.pos_y = getLocal().pos.y
+sendPacketRaw(pkt)
+end
+
+function sendPlace(x, y)
+pkt = {}
+pkt.type = 3
+pkt.int_data = itemid
+pkt.int_x = x
+pkt.int_y = y
+pkt.pos_x = getLocal().pos.x
+pkt.pos_y = getLocal().pos.y
+sendPacketRaw(pkt)
+end
+
+function hook(varl)
+if varl[0]:find("OnConsoleMessage") then
+if varl[1]:find("!startbreak") then
+breakkkk = true
+elseif varl[1]:find("!stopbreak") then
+breakkkk = false
+elseif varl[1]:find("!position") then
+sendPacket("action|input\n|text|x: "..getLocal().pos.x.." y: "..getLocal().pos.y, 2)
+end
+end
+end
+
+addHook("OnVarlist", "e", hook)
+
+while true do
+if breakkkk then
+sendPlace((getLocal().pos.x) / 32, getLocal().pos.y / 32 + 2)
+sleep(100)
+sendPlace((getLocal().pos.x) / 32, getLocal().pos.y / 32 + 2)
+sleep(100)
+sendPunch((getLocal().pos.x) / 32, getLocal().pos.y / 32 + 2)
+sleep(100)
+sendPunch((getLocal().pos.x) / 32, getLocal().pos.y / 32 + 2)
+sleep(100)
+sendPlace((getLocal().pos.x) / 32, getLocal().pos.y / 32 + 2)
+sleep(100)
+sendPunch((getLocal().pos.x) / 32, getLocal().pos.y / 32 + 2)
+sleep(100)
+end
+end

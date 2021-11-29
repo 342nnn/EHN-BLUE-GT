@@ -1,0 +1,55 @@
+Gems = 112
+Blocks = 5666
+Seeds = 5667
+Fossils = 3918
+Doors = 12
+Command = "!lgrid"
+
+
+removeHooks()
+
+function hook(vlist)
+if vlist[0]:find("OnConsoleMessage") then
+if vlist[1]:find(Command) then
+
+gems = 0
+for _, obj in pairs(getObjects()) do
+if obj.id == Gems then
+gems = gems + obj.count
+end
+end
+
+lasergrid = 0
+for _, obj in pairs(getObjects()) do
+if obj.id == Blocks then
+lasergrid = lasergrid + obj.count
+end
+end
+
+laserseed = 0
+for _, obj in pairs(getObjects()) do
+if obj.id == Seeds then
+laserseed = laserseed + obj.count
+end
+end
+
+fossil = 0
+for _, tile in pairs(getTiles()) do
+if tile.fg == Fossils then
+fossil = fossil + 1
+end
+end
+
+door = 0
+for _, tile in pairs(getTiles()) do
+if tile.fg == Doors then
+door = door + 1
+end
+end
+sendPacket("action|input\n|text|[`pGems	`c "..gems.."] [`pBlocks `c"..lasergrid.."] [`pSeeds `c "..laserseed.."] [`pFossils `c "..fossil.."] [`pDoors	`c "..door.."]", 2)
+
+
+end
+end
+end
+addHook("onvarlist", "startstop", hook)
