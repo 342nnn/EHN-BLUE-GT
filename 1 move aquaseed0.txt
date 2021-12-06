@@ -1,0 +1,171 @@
+function kiri(x)
+px = getLocal().pos.x / 32
+py = getLocal().pos.y / 32
+findPath(px - x, py)
+sleep(500)
+end
+
+function kanan(x)
+px = getLocal().pos.x / 32
+py = getLocal().pos.y / 32
+findPath(px + x, py)
+sleep(500)
+end
+
+function atas(x)
+px = getLocal().pos.x / 32
+py = getLocal().pos.y / 32
+findPath(px, py-x)
+sleep(500)
+end
+
+function bawah(x)
+px = getLocal().pos.x / 32
+py = getLocal().pos.y / 32
+findPath(px, py+x)
+sleep(500)
+end
+
+function collectItems(x)
+    pos = getLocal().pos
+    for _, obj in pairs(getObjects()) do
+        posx = math.abs(pos.x - obj.pos.x)
+        posy = math.abs(pos.y - obj.pos.y)
+        if obj.id ~= 112 and posx < x*32 and posy < x*32 then
+            pkt = {}
+            pkt.type = 11
+            pkt.int_data = obj.oid
+            pkt.pos_x = obj.pos.x
+            pkt.pos_y = obj.pos.y
+            sleep(10)
+            sendPacketRaw(pkt)
+        end
+    end
+end
+
+function findItem(id)
+    for _, itm in pairs(getInventory()) do
+        if itm.id == id then
+            return itm.count
+        end    
+    end
+    return 0
+end
+
+function dropItem(itemID, count)
+    hideDrop = true
+    sendPacket("action|drop\n|itemID|" .. itemID, 2)
+    sendPacket("action|dialog_return\ndialog_name|drop_item\nitemID|" .. itemID .. "|\ncount|" .. count, 2)
+    sleep(50)
+    hideDrop = false
+end
+
+function faceSide(side)
+    if side == "kiri" then
+        packet = {}
+        packet.type = 0
+        packet.pos_x = getLocal().pos.x
+        packet.pos_y = getLocal().pos.y
+        packet.flags = 48
+        sendPacketRaw(packet)
+        return
+    end
+    if side == "kanan" then
+        packet = {}
+        packet.type = 0
+        packet.pos_x = getLocal().pos.x
+        packet.pos_y = getLocal().pos.y
+        packet.flags = 32
+        sendPacketRaw(packet)
+        return
+    end
+    log("`cInvalid side chosen (`4" .. side .. "`c)")
+end
+
+function cekWD1(worldName)
+    for _, tile in pairs(getTiles()) do
+        if getTile(tile.pos.x, tile.pos.y).fg == 6 then
+            joinWorld(worldName)
+            sleep(delay)
+            collectItems(4)
+            sleep(delay)
+            return true
+        end
+    end
+end
+
+function cekWD2(worldName)
+    for _, tile in pairs(getTiles()) do
+        if getTile(tile.pos.x, tile.pos.y).fg == 6 then
+            joinWorld(worldName)
+            return true
+        end
+    end
+end
+
+function joinWorld(world)
+    sendPacket("action|join_request\nname|" .. world, 3)
+end
+
+move = false
+function selector(vlist)
+    if vlist[0]:find("OnTalkBubble") then
+        -- =================================== Command Customization =================================== --
+        if vlist[2]:find("!stop") then
+            move = false
+            sendPacket("action|input\n|text|Bot Berhenti !, Tunggu proses selesai !", 2)
+        elseif vlist[2]:find("!start") then
+            move = true
+            sendPacket("action|input\n|text|Bot Jalan !", 2)
+        -- =================================== END =================================== --
+        end
+    end
+end
+
+addHook("onvarlist", "selector", selector)
+
+
+delay = 200
+
+-- worldname|idDoor
+world1 = "ehnaqua|aquatod1"
+world2 = "jualaqua|aquagelas45"
+
+function move(itemid,tilesDrop)
+    while true do
+        sleep(500)
+        if move == true then
+            sleep(10)
+            -- Join to world 1 ( take block/seed )
+            if findItem(itemid) == 0 then
+                joinWorld(world1)
+                sleep(2500)
+                cekWD1(world1)
+                sleep(delay)
+                collectItems(6)
+            elseif findItem(itemid) == 200 then
+            -- Join to world 2 ( drop block/seed )
+                joinWorld(world2)
+                sleep(2500)
+                cekWD2(world2)
+                sleep(delay)
+                faceSide("kiri")
+                sleep(delay)
+                dropItem(itemid,200)
+                i = 0
+                repeat
+                    kanan(1)
+                    sleep(500)
+                    faceSide("kiri")
+                    sleep(500)
+                    dropItem(itemid,200)
+                    i = i+1
+                until i == tilesDrop
+            end
+        end
+    end
+end
+
+move(179,4)
+
+-- move(itemid, total tile)
